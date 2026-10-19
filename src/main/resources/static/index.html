@@ -1,0 +1,800 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PayFlow | Payment Dashboard</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --blue: #2864f0;
+            --blue-light: #edf3ff;
+            --text: #182544;
+            --muted: #71809e;
+            --border: #e4eaf5;
+            --background: #f5f8ff;
+        }
+
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: var(--background);
+            color: var(--text);
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        aside {
+            width: 235px;
+            background: white;
+            border-right: 1px solid var(--border);
+            padding: 28px 18px;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            font-size: 27px;
+            font-weight: 800;
+            margin: 8px 6px 42px;
+            color: var(--blue);
+        }
+
+        .logo span {
+            color: var(--text);
+        }
+
+        nav a {
+            display: block;
+            text-decoration: none;
+            color: var(--text);
+            padding: 15px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        nav a.active,
+        nav a:hover {
+            background: var(--blue-light);
+            color: var(--blue);
+        }
+
+        .sidebar-bottom {
+            margin-top: auto;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.8;
+            padding: 10px;
+        }
+
+        main {
+            flex: 1;
+            min-width: 0;
+            padding: 28px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            gap: 12px;
+        }
+
+        .topbar h2 {
+            font-size: 23px;
+        }
+
+        .online {
+            color: #138653;
+            background: #e6f8ef;
+            border-radius: 30px;
+            padding: 10px 15px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .welcome {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 24px;
+            padding: 28px;
+            border: 1px solid #d9e5ff;
+            border-radius: 18px;
+            background: linear-gradient(120deg, #eaf2ff, white);
+            margin-bottom: 25px;
+        }
+
+        .welcome h1 {
+            font-size: clamp(23px, 3vw, 32px);
+            margin-bottom: 10px;
+        }
+
+        .welcome p {
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .stats {
+            display: flex;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            min-width: 85px;
+            text-align: center;
+        }
+
+        .stat p {
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+
+        .stat strong {
+            font-size: 26px;
+            color: var(--blue);
+        }
+
+        .stat.pending strong {
+            color: #d88b00;
+        }
+
+        .stat.success strong {
+            color: #138653;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 17px;
+            padding: 26px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 22px rgba(38, 72, 130, 0.035);
+        }
+
+        .card-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .card-heading h2 {
+            font-size: 21px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 9px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 14px;
+            font-size: 15px;
+            border: 1px solid #d6e0f2;
+            border-radius: 10px;
+            outline: none;
+            background: white;
+            color: var(--text);
+        }
+
+        input:focus, select:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px #2864f018;
+        }
+
+        button {
+            border: 0;
+            border-radius: 10px;
+            padding: 13px 18px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: wait;
+        }
+
+        .primary {
+            background: var(--blue);
+            color: white;
+        }
+
+        .primary:hover {
+            background: #174fd1;
+        }
+
+        .submit-button {
+            grid-column: 1 / -1;
+            padding: 16px;
+        }
+
+        .secondary {
+            background: var(--blue-light);
+            color: var(--blue);
+        }
+
+        #message {
+            display: none;
+            margin-top: 18px;
+            padding: 13px;
+            border-radius: 10px;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+        }
+
+        #message.good {
+            display: block;
+            color: #137547;
+            background: #e8f8ef;
+        }
+
+        #message.bad {
+            display: block;
+            color: #b42318;
+            background: #fff0ef;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            white-space: nowrap;
+        }
+
+        th, td {
+            padding: 17px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: #f7f9fe;
+            color: var(--muted);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        td {
+            font-size: 14px;
+        }
+
+        .amount {
+            font-weight: 800;
+            color: #138653;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 7px 11px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .badge-pending {
+            background: #fff1cf;
+            color: #a76300;
+        }
+
+        .badge-success {
+            background: #dcf8e8;
+            color: #137547;
+        }
+
+        .badge-failed {
+            background: #ffe4e4;
+            color: #b42318;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 32px;
+            color: var(--muted);
+        }
+
+        .table-footer {
+            margin-top: 18px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        footer {
+            text-align: center;
+            color: var(--muted);
+            font-size: 12px;
+            padding: 12px;
+        }
+
+        @media (max-width: 850px) {
+            aside {
+                width: 175px;
+                padding: 20px 10px;
+            }
+
+            main {
+                padding: 18px;
+            }
+
+            .welcome {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .layout {
+                display: block;
+            }
+
+            aside {
+                width: 100%;
+                padding: 12px;
+            }
+
+            .logo {
+                margin: 5px 8px 12px;
+            }
+
+            nav {
+                display: flex;
+                gap: 5px;
+                overflow-x: auto;
+            }
+
+            nav a {
+                white-space: nowrap;
+                margin: 0;
+                padding: 10px;
+                font-size: 13px;
+            }
+
+            .sidebar-bottom {
+                display: none;
+            }
+
+            main {
+                padding: 14px;
+            }
+
+            .card {
+                padding: 18px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .submit-button {
+                grid-column: auto;
+            }
+
+            .stats {
+                justify-content: space-between;
+                width: 100%;
+                gap: 12px;
+            }
+
+            .stat {
+                min-width: 65px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="layout">
+
+    <aside>
+        <div class="logo">ϟ <span>PayFlow</span></div>
+
+        <nav>
+            <a href="#dashboard" class="active">⌂ &nbsp; Dashboard</a>
+            <a href="#transactions">☷ &nbsp; Transactions</a>
+            <a href="#analytics">▥ &nbsp; Analytics</a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <strong>PayFlow v1.0</strong><br>
+            Built using Spring Boot
+        </div>
+    </aside>
+
+    <main id="dashboard">
+        <header class="topbar">
+            <h2>Payment Dashboard</h2>
+            <span class="online">● System Online</span>
+        </header>
+
+        <section class="welcome">
+            <div>
+                <h1>Welcome to PayFlow!</h1>
+                <p>Manage your payments and transactions with ease.</p>
+            </div>
+
+            <div class="stats">
+                <div class="stat">
+                    <p>Total Transactions</p>
+                    <strong id="totalCount">0</strong>
+                </div>
+                <div class="stat pending">
+                    <p>Pending</p>
+                    <strong id="pendingCount">0</strong>
+                </div>
+                <div class="stat success">
+                    <p>Successful</p>
+                    <strong id="successCount">0</strong>
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="card-heading">
+                <h2>＋ Create New Transaction</h2>
+            </div>
+
+            <form id="paymentForm" class="form-grid">
+                <div>
+                    <label for="amount">Amount</label>
+                    <input
+                        type="number"
+                        id="amount"
+                        name="amount"
+                        min="0.01"
+                        max="999999999999"
+                        step="0.01"
+                        placeholder="Enter amount"
+                        required>
+                </div>
+
+                <div>
+                    <label for="currency">Currency</label>
+                    <select id="currency" name="currency" required>
+                        <option value="INR">INR — Indian Rupee</option>
+                        <option value="USD">USD — US Dollar</option>
+                        <option value="EUR">EUR — Euro</option>
+                        <option value="GBP">GBP — British Pound</option>
+                    </select>
+                </div>
+
+                <button type="submit" id="submitButton"
+                        class="primary submit-button">
+                    ➤ &nbsp; Create Transaction
+                </button>
+            </form>
+
+            <div id="message" role="status" aria-live="polite"></div>
+        </section>
+
+        <section class="card" id="transactions">
+            <div class="card-heading">
+                <h2>Recent Transactions</h2>
+                <button class="secondary" id="refreshButton" type="button">
+                    ↻ Refresh
+                </button>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Amount</th>
+                        <th>Currency</th>
+                        <th>Status</th>
+                        <th>Created At</th>
+                    </tr>
+                    </thead>
+                    <tbody id="transactionRows">
+                    <tr><td colspan="5" class="empty">Loading transactions...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="table-footer" id="tableFooter">
+                Loading transaction records...
+            </div>
+        </section>
+
+        <section class="card" id="analytics">
+            <div class="card-heading">
+                <h2>Transaction Summary</h2>
+            </div>
+            <p id="summaryText">Your transaction summary will appear here.</p>
+        </section>
+
+        <footer>PayFlow &copy; 2026 · Demo payment management application</footer>
+    </main>
+</div>
+
+
+<script>
+    const API_URL = "/api/transactions";
+
+    // Get HTML elements from the browser
+    const form = document.getElementById("paymentForm");
+    const amountInput = document.getElementById("amount");
+    const currencyInput = document.getElementById("currency");
+    const submitButton = document.getElementById("submitButton");
+    const refreshButton = document.getElementById("refreshButton");
+    const message = document.getElementById("message");
+    const rows = document.getElementById("transactionRows");
+
+    function showMessage(text, type) {
+        message.textContent = text;
+        message.className = type;
+    }
+
+    function formatAmount(amount, currency) {
+        return new Intl.NumberFormat("en-IN", {
+            style: "currency",
+            currency: currency,
+            minimumFractionDigits: 2
+        }).format(Number(amount));
+    }
+
+    function makeCell(value, className = "") {
+        const td = document.createElement("td");
+        td.textContent = value;
+        if (className) td.className = className;
+        return td;
+    }
+
+    // GET: Fetch all transactions from Spring Boot
+    async function loadTransactions() {
+        refreshButton.disabled = true;
+
+        try {
+            const response = await fetch(API_URL);
+
+            if (!response.ok) {
+                throw new Error("HTTP error: " + response.status);
+            }
+
+            const transactions = await response.json();
+            if (!Array.isArray(transactions)) {
+                throw new Error("Invalid transaction response.");
+            }
+
+            rows.replaceChildren();
+
+            let pending = 0;
+            let successful = 0;
+            let failed = 0;
+
+            transactions.forEach(tx => {
+                const status = String(tx.status || "PENDING").toUpperCase();
+
+                if (status === "PENDING") pending++;
+                if (status === "SUCCESS") successful++;
+                if (status === "FAILED") failed++;
+
+                const tr = document.createElement("tr");
+                tr.appendChild(makeCell(tx.id));
+                tr.appendChild(makeCell(
+                    formatAmount(tx.amount, tx.currency), "amount"
+                ));
+                tr.appendChild(makeCell(tx.currency));
+
+                const statusCell = makeCell(status);
+                statusCell.className = "badge-" + status.toLowerCase();
+                tr.appendChild(statusCell);
+
+                const created = tx.createdAt
+                    ? new Date(tx.createdAt).toLocaleString("en-IN")
+                    : "—";
+                tr.appendChild(makeCell(created));
+
+                rows.appendChild(tr);
+            });
+
+            if (transactions.length === 0) {
+                const tr = document.createElement("tr");
+                const td = makeCell("No transactions yet.");
+                td.colSpan = 5;
+                td.className = "empty";
+                tr.appendChild(td);
+                rows.appendChild(tr);
+            }
+
+            document.getElementById("totalCount").textContent =
+                transactions.length;
+            document.getElementById("pendingCount").textContent = pending;
+            document.getElementById("successCount").textContent = successful;
+
+            document.getElementById("tableFooter").textContent =
+                "Showing " + transactions.length + " transaction(s)";
+
+            document.getElementById("summaryText").textContent =
+                successful + " successful, " + pending +
+                " pending, and " + failed + " failed transaction(s).";
+
+        } catch (error) {
+            showMessage(
+                "Could not load transactions: " + error.message, "bad"
+            );
+        } finally {
+            refreshButton.disabled = false;
+        }
+    }
+
+    // POST: Send form values to Spring Boot
+  
+form.addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const amount = Number(amountInput.value);
+    const currency = currencyInput.value;
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+        showMessage("Enter an amount greater than zero.", "bad");
+        return;
+    }
+
+    if (typeof Razorpay === "undefined") {
+        showMessage(
+            "Razorpay Checkout could not load. Check your internet connection.",
+            "bad"
+        );
+        return;
+    }
+
+    submitButton.disabled = true;
+
+    try {
+        // Step 1: Ask our backend to create a Razorpay order.
+        const orderResponse = await fetch("/api/payments/create-order", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ amount, currency })
+        });
+
+        const order = await orderResponse.json().catch(() => null);
+
+        if (!orderResponse.ok) {
+            throw new Error(
+                order?.detail ||
+                order?.message ||
+                "Could not create Razorpay order."
+            );
+        }
+
+        // Step 2: Open Razorpay Checkout.
+        const options = {
+            key: order.keyId,
+            amount: order.amount,
+            currency: order.currency,
+            name: "PayFlow",
+            description: "Test payment",
+            order_id: order.orderId,
+
+            handler: async function(paymentResponse) {
+                showMessage("Payment received. Verifying securely...", "good");
+
+                try {
+                    // Step 3: Verify the checkout response on the backend.
+                    const verifyResponse = await fetch("/api/payments/verify", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            razorpayOrderId: paymentResponse.razorpay_order_id,
+                            razorpayPaymentId: paymentResponse.razorpay_payment_id,
+                            razorpaySignature: paymentResponse.razorpay_signature
+                        })
+                    });
+
+                    const verifiedPayment =
+                        await verifyResponse.json().catch(() => null);
+
+                    if (!verifyResponse.ok) {
+                        throw new Error(
+                            verifiedPayment?.detail ||
+                            verifiedPayment?.message ||
+                            "Payment verification failed."
+                        );
+                    }
+
+                    showMessage(
+                        "Payment verified! Transaction #" +
+                        verifiedPayment.id + " — " +
+                        verifiedPayment.status,
+                        "good"
+                    );
+
+                    form.reset();
+                    await loadTransactions();
+
+                } catch (error) {
+                    showMessage(
+                        "Payment verification issue: " + error.message +
+                        ". Refresh transactions and check the payment status.",
+                        "bad"
+                    );
+                    await loadTransactions();
+                } finally {
+                    submitButton.disabled = false;
+                }
+            },
+
+            modal: {
+                ondismiss: function() {
+                    showMessage(
+                        "Checkout closed. The transaction may remain pending.",
+                        "bad"
+                    );
+                    submitButton.disabled = false;
+                    loadTransactions();
+                }
+            },
+
+            theme: {
+                color: "#2864f0"
+            }
+        };
+
+        const checkout = new Razorpay(options);
+
+        checkout.on("payment.failed", function() {
+            showMessage(
+                "Payment failed. You can try again.",
+                "bad"
+            );
+            submitButton.disabled = false;
+            loadTransactions();
+        });
+
+        checkout.open();
+
+    } catch (error) {
+        showMessage(
+            "Could not start payment: " + error.message,
+            "bad"
+        );
+        submitButton.disabled = false;
+    }
+});
+
+
+    refreshButton.addEventListener("click", loadTransactions);
+
+    // Load saved transactions when the dashboard opens
+    loadTransactions();
+</script>
+
+</body>
+</html>
